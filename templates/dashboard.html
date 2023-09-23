@@ -1,0 +1,103 @@
+ {% extends 'base.html' %} <!-- mengekstend base.html -->
+ {% load custom_tags %}
+ {% block main %}
+    <div class="card-body">
+        <h4>Daftar Produk</h4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th scope="col">ID Produk</th>
+                    <th scope="col">Nama Produk</th>
+                    <th scope="col">Harga</th>
+                    <th scope="col">Kategori</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for x in data %}
+                <tr>
+                    <td>{{ x.id_produk }}</td>
+                    <td>{{ x.nama_produk }}</td>
+                    <td>{{ x.harga|currency }}</td>
+                    <td>{{ x.kategori.nama_kategori }}</td>
+                    <td>{{ x.status.nama_status }}</td>
+                    <td>
+                        <a type="button" class="btn btn-warning" href="{% url 'app:ubah_produk' x.id_produk %}">Update</a>
+                        <button class="btn btn-danger text-white" data-url="{% url 'app:hapus_produk' x.id_produk %}"
+                        data-back="{% url 'app:admin_produk' %}"
+                        onclick="delete_data(this, '{{x.nama_produk}}')">Delete</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="row">
+            <a type="button" class="btn btn-success" href="{% url 'app:tambah_produk' %}" style="margin-right: 5px;">Create</a>
+            <form action="{% url 'app:get_api' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-primary">Get API Data</button>
+            </form>
+        </div>  
+    </div>
+ {% endblock %}
+ {% block scripts %}
+ <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+ <script>
+     function delete_data(e, categoryName) {
+        Swal.fire({
+            title: 'Hapus Produk',
+            text: `Apakah Kamu Ingin menghapus "${categoryName}"?`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No',
+            buttonsStyling: false,
+            customClass: {
+                confirmButton: 'btn btn-danger',
+                cancelButton: 'btn btn-primary',
+            },
+        }).then(function (result) {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: $(e).attr('data-url'),
+                    data: {},
+                    dataType: "json",
+                    timeout: 10000,
+                    success: function(response){
+                        if(response.message == 'error'){
+                            Swal.fire({
+                                text: data.error_message,
+                                icon: "error",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, mengerti!",
+                                customClass: { confirmButton: "btn btn-primary" }
+                            });
+                        }else{
+                            Swal.fire({
+                                text: "Data anda berhasil dihapus!",
+                                icon: "success",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, mengerti!",
+                                customClass: { confirmButton: "btn btn-primary" }
+                            }).then(function (result) {
+                                if (result.isConfirmed) {
+                                    window.location.reload(true);
+                                }
+                            });
+                        } 
+                    },
+                    error: function (response) {
+                        console.log(response);
+                        Swal.fire('Arsip data gagal dilakukan!', '', 'error');
+                        setTimeout(function(){ 
+                            window.location.href = $(e).attr('data-back');
+                        }, 2000);
+                    }
+                });
+            }
+        });
+    }
+ </script>
+ {% endblock %}

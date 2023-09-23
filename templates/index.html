@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Junior Programmer</title>
+</head>
+<body>
+    <form action="{% url 'app:get_api' %}" method="post">
+        {% csrf_token %}
+        <button type="submit">Submit data post</button>
+    </form>
+</body>
+</html>
